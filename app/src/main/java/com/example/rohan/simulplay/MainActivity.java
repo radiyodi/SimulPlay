@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     int currentPos = 0;
     int trackNum;
     int maxLength = 0;
+    int tempProgress;
     boolean isPlaying = false;
 
     MediaPlayer track1 = new MediaPlayer();
@@ -100,12 +101,23 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //track1.start();
                 if(isPlaying){
-                    playButton.setImageResource(android.R.drawable.ic_media_play);
-                    isPlaying = false;
+                    if(track1.isPlaying()){
+                        currentPos = track1.getCurrentPosition();
+                    }
+                    else if(track2.isPlaying()){
+                        currentPos = track2.getCurrentPosition();
+                    }
+                    else if(track3.isPlaying()){
+                        currentPos = track3.getCurrentPosition();
+                    }
+
                     track1.pause();
                     track2.pause();
                     track3.pause();
-                    currentPos = track1.getCurrentPosition();
+
+                    playButton.setImageResource(android.R.drawable.ic_media_play);
+                    isPlaying = false;
+
                     track1.seekTo(currentPos);
                     track2.seekTo(currentPos);
                     track3.seekTo(currentPos);
@@ -218,6 +230,9 @@ public class MainActivity extends AppCompatActivity {
         track3.seekTo(0);
         isPlaying = false;
         playButton.setImageResource(android.R.drawable.ic_media_play);
+        currentPos = 0;
+        tempProgress = 0;
+        updateSeek();
         switch(i){
             case 1: track1 = MediaPlayer.create(getApplicationContext(),fileUri);
                 try {
@@ -269,9 +284,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateSeek(){
-        seekBar.setEnabled(true);
-        int tempProgress = track1.getCurrentPosition();
+        if(track1.isPlaying()){
+            tempProgress = track1.getCurrentPosition();
+        }
+        else if(track2.isPlaying()){
+            tempProgress = track2.getCurrentPosition();
+        }
+        else if(track3.isPlaying()){
+            tempProgress = track3.getCurrentPosition();
+        }
         seekBar.setProgress(tempProgress);
+        seekBar.setEnabled(true);
         elapsedTimeTextView.setText(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(tempProgress),
                 TimeUnit.MILLISECONDS.toSeconds(tempProgress) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(tempProgress))));
