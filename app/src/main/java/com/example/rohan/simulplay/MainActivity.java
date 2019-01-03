@@ -13,8 +13,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
@@ -45,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
     ImageButton playButton;
     ImageButton beginButton;
 
+    Switch muteSwitch1;
+    Switch muteSwitch2;
+    Switch muteSwitch3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +68,13 @@ public class MainActivity extends AppCompatActivity {
 
         addButton = findViewById(R.id.addButton);
         playButton = findViewById(R.id.playButton);
+        playButton.setEnabled(false);
         beginButton = findViewById(R.id.beginningButton);
+        beginButton.setEnabled(false);
+
+        muteSwitch1 = findViewById(R.id.muteSwitch1);
+        muteSwitch2 = findViewById(R.id.muteSwitch2);
+        muteSwitch3 = findViewById(R.id.muteSwitch3);
 
         Handler handler = new Handler();
 
@@ -145,6 +157,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        muteSwitch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    track1.setVolume(0,0);
+                }
+                else{
+                    track1.setVolume(1,1);
+                }
+            }
+        });
+
+        muteSwitch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    track2.setVolume(0,0);
+                }
+                else{
+                    track2.setVolume(1,1);
+                }
+            }
+        });
+
+        muteSwitch3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    track3.setVolume(0,0);
+                }
+                else{
+                    track3.setVolume(1,1);
+                }
+            }
+        });
+
     }
 
     public void pickFile(){
@@ -162,27 +210,62 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initializeTrack(int i, Uri fileUri){
+        track1.pause();
+        track2.pause();
+        track3.pause();
+        track1.seekTo(0);
+        track2.seekTo(0);
+        track3.seekTo(0);
+        isPlaying = false;
+        playButton.setImageResource(android.R.drawable.ic_media_play);
         switch(i){
             case 1: track1 = MediaPlayer.create(getApplicationContext(),fileUri);
-                    if(track1.getDuration() > maxLength) maxLength = track1.getDuration();
-                    trackStatusTextView1.setText("Track 1: " + "initialized to something");
+                try {
+                    track1.getDuration();
+                }catch(Exception e){
+                    track1 = new MediaPlayer();
+                    Toast.makeText(getApplicationContext(), "Error: file format not supported", Toast.LENGTH_LONG).show();
                     break;
+                }
+                if (track1.getDuration() > maxLength) maxLength = track1.getDuration();
+                trackStatusTextView1.setText("Track 1: " + fileUri.getPath().substring(fileUri.getPath().lastIndexOf("/") + 1));
+                setSeek(maxLength);
+                break;
             case 2: track2 = MediaPlayer.create(getApplicationContext(),fileUri);
-                    if(track2.getDuration() > maxLength) maxLength = track2.getDuration();
-                    trackStatusTextView2.setText("Track 2: " + "initialized to something");
+                try {
+                    track2.getDuration();
+                }catch(Exception e){
+                    track2 = new MediaPlayer();
+                    Toast.makeText(getApplicationContext(), "Error: file format not supported", Toast.LENGTH_LONG).show();
                     break;
+                }
+                if (track2.getDuration() > maxLength) maxLength = track2.getDuration();
+                trackStatusTextView2.setText("Track 2: " + fileUri.getPath().substring(fileUri.getPath().lastIndexOf("/") + 1));
+                setSeek(maxLength);
+                break;
             case 3: track3 = MediaPlayer.create(getApplicationContext(),fileUri);
-                    if(track3.getDuration() > maxLength) maxLength = track3.getDuration();
-                    trackStatusTextView3.setText("Track 3: " + "initialized to something");
+                try {
+                    track3.getDuration();
+                }catch(Exception e){
+                    track3 = new MediaPlayer();
+                    Toast.makeText(getApplicationContext(), "Error: file format not supported", Toast.LENGTH_LONG).show();
                     break;
+                }
+                if (track3.getDuration() > maxLength) maxLength = track3.getDuration();
+                trackStatusTextView3.setText("Track 3: " + fileUri.getPath().substring(fileUri.getPath().lastIndexOf("/") + 1));
+                setSeek(maxLength);
+                break;
         }
+    }
+
+    private void setSeek(int length){
         seekBar.setMax(maxLength);
         totalTimeTextView.setText(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(maxLength),
                 TimeUnit.MILLISECONDS.toSeconds(maxLength) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(maxLength))));
         seekBar.setEnabled(true);
-        //maxLength = Math.max(track1.getDuration(), Math.max(track2.getDuration(), track3.getDuration()));
-        Toast.makeText(getApplicationContext(), "max length: " + maxLength, Toast.LENGTH_SHORT).show();
+        playButton.setEnabled(true);
+        beginButton.setEnabled(true);
     }
 
     private void updateSeek(){
